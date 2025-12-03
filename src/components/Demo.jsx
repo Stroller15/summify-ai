@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { copy, linkIcon, loader, tick, plane, enter } from "../assets";
+import { copy, linkIcon, tick } from "../assets";
 import { useLazyGetSummaryQuery } from "../services/article";
 
 const Demo = () => {
@@ -30,11 +30,10 @@ const Demo = () => {
 
     if (data?.summary) {
       const newArticle = { ...article, summary: data.summary };
-
       const updatedAllArticles = [newArticle, ...allArticles];
 
       setArticle(newArticle);
-
+      setAllArticles(updatedAllArticles);
       localStorage.setItem("articles", JSON.stringify(updatedAllArticles));
     }
   };
@@ -45,107 +44,187 @@ const Demo = () => {
     setTimeout(() => setCopied(false), 3000);
   };
 
+  const handleDelete = (indexToDelete) => {
+    const updatedArticles = allArticles.filter((_, index) => index !== indexToDelete);
+    setAllArticles(updatedArticles);
+    localStorage.setItem("articles", JSON.stringify(updatedArticles));
+
+    if (article.url === allArticles[indexToDelete]?.url) {
+      setArticle({ url: "", summary: "" });
+    }
+  };
+
   return (
-    <div className="w-full max-w-xl">
-      <section className="w-full max-w-xl mt-16">
-        {/* search */}
-        <div className="flex flex-col w-full gap-2">
-          <form
-            className="relative flex items-center justify-center "
-            onSubmit={handleSubmit}
-          >
+    <div className="w-full">
+      {/* Main Input Section */}
+      <div className="input-container">
+        <form onSubmit={handleSubmit}>
+          <div className="input-wrapper">
             <img
               src={linkIcon}
-              alt="link_icon"
-              className="absolute left-0 w-5 my-2 ml-3"
+              alt="link"
+              className="input-icon"
             />
-
             <input
               type="url"
-              placeholder="Enter a URL"
+              placeholder="Paste article URL here..."
               value={article.url}
-              onChange={(e) =>
-                setArticle({
-                  ...article,
-                  url: e.target.value,
-                })
-              }
+              onChange={(e) => setArticle({ ...article, url: e.target.value })}
               required
-              className="url_input "
+              className="url-input"
             />
 
             <button
               type="submit"
-              className="border-none submit_btn peer-focus:border-gray-700 peer-focus:text-gray-700 "
+              disabled={isFetching}
+              className="submit-btn"
             >
-              <img
-                height={25}
-                width={25}
-                src={enter}
-                alt="plane icon"
-                className="opacity-60"
-              />
+              {isFetching ? (
+                <>
+                  <div className="spinner" style={{ width: '1rem', height: '1rem', borderWidth: '2px' }} />
+                  Summarizing...
+                </>
+              ) : (
+                <>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 3L10 17M10 17L15 12M10 17L5 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Summarize
+                </>
+              )}
             </button>
-          </form>
+          </div>
+        </form>
+      </div>
 
-          {/* Browse URL History */}
+      {/* Summary Display */}
+      {isFetching && (
+        <div className="loading-container">
+          <div className="spinner" />
+          <p className="loading-text">Analyzing article and generating summary...</p>
+        </div>
+      )}
 
-          <div className="flex flex-col gap-1 overflow-y-auto max-h-60">
+      {error && (
+        <div className="error-container">
+          <h3 className="error-title">Failed to summarize</h3>
+          <p className="error-message">
+            {error?.data?.error || "Unable to process this article. Please try a different URL."}
+          </p>
+        </div>
+      )}
+
+      {article.summary && !isFetching && (
+        <div className="summary-section">
+          <div className="summary-header">
+            <h2 className="summary-title">Summary</h2>
+            <button
+              onClick={() => handleCopy(article.summary)}
+              className="copy-btn"
+            >
+              <img src={copied === article.summary ? tick : copy} alt="copy" style={{ width: '1rem', height: '1rem' }} />
+              {copied === article.summary ? "Copied!" : "Copy"}
+            </button>
+          </div>
+
+          <div className="summary-box">
+            <p className="summary-text">{article.summary}</p>
+
+            <div className="summary-meta">
+              <div className="summary-meta-item">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 4H13M3 8H13M3 12H9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+                {article.summary.split(' ').length} words
+              </div>
+              <div className="summary-meta-item">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" />
+                  <path d="M8 4V8L11 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+                ~{Math.ceil(article.summary.split(' ').length / 200)} min read
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* History Section */}
+      {allArticles.length > 0 && (
+        <div className="history-section">
+          <div className="history-header">
+            <h3 className="history-title">Recent Summaries</h3>
+            <span className="history-count">
+              {allArticles.length} {allArticles.length === 1 ? 'article' : 'articles'}
+            </span>
+          </div>
+
+          <div className="history-list">
             {allArticles.map((item, index) => (
-              <div
-                key={`link-${index}`}
-                onClick={() => setArticle(item)}
-                className="link_card"
-              >
-                <div className="copy_btn" onClick={() => handleCopy(item.url)}>
+              <div key={`article-${index}`} className="history-item">
+                <button
+                  onClick={() => handleCopy(item.url)}
+                  className="icon-btn"
+                  title="Copy URL"
+                >
                   <img
                     src={copied === item.url ? tick : copy}
-                    alt="copy_icon"
-                    className="w-[40%] h-[40%] object-contain"
+                    alt="copy"
+                    style={{ width: '1rem', height: '1rem' }}
                   />
-                </div>
-                <p className="flex-1 text-sm font-medium text-blue-700 truncate font-satoshi">
+                </button>
+
+                <div
+                  onClick={() => setArticle(item)}
+                  className="history-url"
+                  style={{ cursor: 'pointer' }}
+                >
                   {item.url}
-                </p>
+                </div>
+
+                <button
+                  onClick={() => handleDelete(index)}
+                  className="icon-btn"
+                  title="Delete"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 4H13M6 4V3C6 2.44772 6.44772 2 7 2H9C9.55228 2 10 2.44772 10 3V4M5 7V12M8 7V12M11 7V12M4 4H12V13C12 13.5523 11.5523 14 11 14H5C4.44772 14 4 13.5523 4 13V4Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
               </div>
             ))}
           </div>
         </div>
+      )}
 
-        {/* Display Result(s) */}
-
-        <div className="flex justify-center max-w-full my-10 item-center">
-          {isFetching ? (
-            <img
-              src={loader}
-              alt="loader"
-              className="object-contain w-20 h-20"
-            />
-          ) : error ? (
-            <p className="font-bold text-center text-white font-inter">
-              Well, that certainly took an unexpected turn. 😮
-              <br />
-              <span className="font-normal text-gray-700 font-satoshi">
-                {error?.data?.error}
-              </span>
+      {/* Features Section */}
+      {!article.summary && !isFetching && (
+        <div className="features-grid">
+          <div className="feature-card">
+            <div className="feature-icon">⚡</div>
+            <h3 className="feature-title">Lightning Fast</h3>
+            <p className="feature-description">
+              Get summaries in seconds with our advanced AI technology
             </p>
-          ) : (
-            article.summary && (
-              <div className="flex flex-col gap-3">
-                <h2 className="text-xl font-bold text-white font-satoshi">
-                  Article <span className="blue_gradient">Summary</span>
-                </h2>
+          </div>
 
-                <div className="summary_box">
-                  <p className="text-sm font-medium text-white font-inter">
-                    {article.summary}
-                  </p>
-                </div>
-              </div>
-            )
-          )}
+          <div className="feature-card">
+            <div className="feature-icon">🎯</div>
+            <h3 className="feature-title">Highly Accurate</h3>
+            <p className="feature-description">
+              Precise summaries that capture the key points of any article
+            </p>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon">💾</div>
+            <h3 className="feature-title">Auto-Save</h3>
+            <p className="feature-description">
+              All summaries are saved locally for easy access anytime
+            </p>
+          </div>
         </div>
-      </section>
+      )}
     </div>
   );
 };
