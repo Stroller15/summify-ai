@@ -1,99 +1,116 @@
-
 <a name="readme-top"></a>
 
-<!-- PROJECT LOGO -->
-<br />
 <div align="center">
-  <a href="https://github.com/othneildrew/Best-README-Template">
-    <img src="https://github.com/Stroller15/Summify/blob/master/public/favicon.ico" alt="Logo" width="100" height="100">
-  </a>
 
-  <h3 align="center">Summify</h3>
+<img src="public/favicon.ico" width="80" height="80" alt="Summify logo" />
 
-  <p align="center">
-    AI-powered Application that Summarizes Articles with the help of URL!
-    <br />
-    <br />
-    <a href="https://summify-neon.vercel.app/">See Live Here</a> •
-    <a href="https://github.com/Stroller15/Best-README-Template/assets/84174011/d0456c65-8346-46f2-9b15-262ea427301d">View Demo</a>
-  </p>
+# Summify
+
+**Paste an article link, get a summary you can read in under a minute.**
+
+[Live app](https://summify-neon.vercel.app/) · [Demo video](https://github.com/Stroller15/Summify/assets/84174011/6d1b9535-6ba3-411f-99e9-b706088aa01e) · [Run it locally](#run-it-locally)
+
+![React](https://img.shields.io/badge/React-18-149eca?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white)
+![Redux Toolkit](https://img.shields.io/badge/RTK%20Query-1.9-764abc?logo=redux)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38bdf8?logo=tailwindcss&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-4-646cff?logo=vite&logoColor=white)
+
 </div>
 
-<hr>
+![Summify home page](https://github.com/Stroller15/Summify/assets/84174011/739675f2-19db-4f11-a399-3998c70b57f2)
 
+## What it does
 
-<!-- Screenshots -->
+Summify turns long blog posts and news articles into short, readable summaries. Paste a URL, press Enter, and the app fetches the article, pulls out the main text and returns the key points.
 
-<details>
-  <summary>ScreenShots 📸</summary>
-  <ol>
-    
-![screencapture-summify-neon-vercel-app-2023-12-28-22_07_50](https://github.com/Stroller15/Summify/assets/84174011/739675f2-19db-4f11-a399-3998c70b57f2)
+- **Summarize by URL.** No copying and pasting article text. The link is enough.
+- **History that sticks.** Every summary is saved in your browser's local storage, so it's still there after a reload, and opening one again costs no API call.
+- **Copy and delete.** Copy the summary or any past link with one click, or remove an entry from your history.
+- **Works on any screen.** The layout is responsive from phones to wide desktops.
 
-  </ol>
-</details>
+## How it works
 
-<hr>
+```mermaid
+flowchart LR
+    U[URL input] --> Q["RTK Query<br/>useLazyGetSummaryQuery"]
+    Q --> R["Article Extractor and Summarizer<br/>(RapidAPI)"]
+    R -- summary --> UI[Summary card]
+    UI --> LS[(localStorage)]
+    LS -- on load --> H[History list]
+```
 
-<!-- ABOUT THE PROJECT -->
-## About The Project
-<!-- Video -->
+1. The form calls a lazy RTK Query endpoint with the article URL.
+2. The request goes to the [Article Extractor and Summarizer](https://rapidapi.com/restyler/api/article-extractor-and-summarizer) API on RapidAPI, which extracts the article and summarizes it (`/summarize?url=…&length=3`).
+3. The summary is shown and added to the top of the history, which is written to `localStorage` under the key `articles`.
+4. On page load the history is read back, so clicking a past link shows its summary straight away.
 
-[screen-capture (4).webm](https://github.com/Stroller15/Summify/assets/84174011/6d1b9535-6ba3-411f-99e9-b706088aa01e)
+While a request is running the app shows a loader, and if the API fails it shows the error message instead of a blank card.
 
-<br>
+## Tech stack
 
-Summify is a user-friendly web application that simplifies the reading experience for online articles. Built using React and styled with Tailwind CSS, this app allows users to quickly summarize lengthy blog posts by entering their URL. Once the URL is provided, Summify taps into a robust external API, using advanced natural language processing (NLP) to generate concise and informative summaries.
+| Area | Tools |
+| --- | --- |
+| UI | React 18, TypeScript, Tailwind CSS, Lucide icons |
+| Data fetching | Redux Toolkit Query |
+| Summarization | Article Extractor and Summarizer API (RapidAPI) |
+| Build | Vite |
+| Hosting | Vercel |
 
+## Run it locally
 
-### Behind The Code
-<hr>
+You need Node.js 24 (see `engines` in `package.json`) and a free RapidAPI key subscribed to the [Article Extractor and Summarizer](https://rapidapi.com/restyler/api/article-extractor-and-summarizer) API.
 
-![image](https://github.com/Stroller15/Summify/assets/84174011/65eecc9e-6577-4022-956a-954b85cdb73f)
+```bash
+git clone https://github.com/Stroller15/summify-ai.git
+cd summify-ai
+npm install
+```
 
+Create `.env` in the project root:
 
+```bash
+VITE_RAPID_API_ARTICLE_KEY=your_rapidapi_key
+```
 
+Start the dev server:
 
-<!-- Functionality of PROJECT -->
-### Functionality 
-<hr>
+```bash
+npm run dev
+```
 
-📝 Summarize Lengthy Articles: <br>
-Effortlessly condense long articles! Input the blog post's URL, and Summify uses a smart external tool to craft concise, easy-to-read summaries.
+Open the URL Vite prints, usually [http://localhost:5173](http://localhost:5173).
 
-🔄 Save Latest 5 Summaries: <br>
-We've got your back to save your time and minimize unnecessary API calls. Summify stores the most recent five summaries locally, ensuring faster access without frequent data requests.
+> [!WARNING]
+> Vite builds `VITE_*` variables into the client bundle, so the key is visible to anyone using the deployed site. Use a key with a usage cap, or move the API call behind a serverless function before sharing a production deployment widely.
 
-💾 Local Storage for Data: <br>
-Your summarized articles are stored locally for quick and easy access. With Summify, enjoy a smooth experience without the constant need for an internet connection.
+### Scripts
 
-📱💻 Web and Mobile Compatibility: <br>
-No matter your device—phone or laptop—Summify is designed to be responsive. Enjoy a consistent and comfortable reading experience across web browsers and mobile devices.
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Start the dev server |
+| `npm run build` | Type-check and build into `dist/` |
+| `npm run preview` | Serve the production build |
+| `npm run lint` | ESLint (no warnings allowed) |
+| `npm run typecheck` | TypeScript only |
 
+## Project structure
 
-<!-- Built With -->
+```
+src/
+  components/
+    Hero.tsx         Header and tagline
+    Demo.tsx         URL form, summary card and history
+    GithubMark.tsx
+  services/
+    article.ts       RTK Query API definition (RapidAPI)
+    store.ts         Redux store
+  config.ts          Repository URL
+  App.tsx, main.tsx
+```
 
+## Architecture
 
-## Built with
-<hr>
+![Summify architecture diagram](https://github.com/Stroller15/Summify/assets/84174011/65eecc9e-6577-4022-956a-954b85cdb73f)
 
-- Reat.js
-- Tailwind
-- Javascript
-- External API(Article Extractor and Summarizer)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
