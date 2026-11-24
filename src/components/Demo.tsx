@@ -1,21 +1,38 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { copy, linkIcon, tick } from "../assets";
 import { useLazyGetSummaryQuery } from "../services/article";
 
+interface Article {
+  url: string;
+  summary: string;
+}
+
+// Pulls the API's `error` message out of an RTK Query error, if present.
+const getErrorMessage = (error: unknown): string | undefined => {
+  if (typeof error === "object" && error !== null && "data" in error) {
+    const data = (error as { data?: unknown }).data;
+    if (typeof data === "object" && data !== null && "error" in data) {
+      const message = (data as { error?: unknown }).error;
+      return typeof message === "string" ? message : undefined;
+    }
+  }
+  return undefined;
+};
+
 const Demo = () => {
-  const [article, setArticle] = useState({
+  const [article, setArticle] = useState<Article>({
     url: "",
     summary: "",
   });
 
-  const [allArticles, setAllArticles] = useState([]);
+  const [allArticles, setAllArticles] = useState<Article[]>([]);
   const [copied, setCopied] = useState("");
 
   const [getSummary, { error, isFetching }] = useLazyGetSummaryQuery();
 
   useEffect(() => {
-    const articleFromLocalStorage = JSON.parse(
-      localStorage.getItem("articles")
+    const articleFromLocalStorage: Article[] | null = JSON.parse(
+      localStorage.getItem("articles") ?? "null"
     );
 
     if (articleFromLocalStorage) {
@@ -23,13 +40,13 @@ const Demo = () => {
     }
   }, []);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const { data } = await getSummary({ articleUrl: article.url });
 
     if (data?.summary) {
-      const newArticle = { ...article, summary: data.summary };
+      const newArticle: Article = { ...article, summary: data.summary };
       const updatedAllArticles = [newArticle, ...allArticles];
 
       setArticle(newArticle);
@@ -38,13 +55,13 @@ const Demo = () => {
     }
   };
 
-  const handleCopy = (copyUrl) => {
+  const handleCopy = (copyUrl: string) => {
     setCopied(copyUrl);
     navigator.clipboard.writeText(copyUrl);
-    setTimeout(() => setCopied(false), 3000);
+    setTimeout(() => setCopied(""), 3000);
   };
 
-  const handleDelete = (indexToDelete) => {
+  const handleDelete = (indexToDelete: number) => {
     const updatedArticles = allArticles.filter((_, index) => index !== indexToDelete);
     setAllArticles(updatedArticles);
     localStorage.setItem("articles", JSON.stringify(updatedArticles));
@@ -109,7 +126,7 @@ const Demo = () => {
         <div className="error-container">
           <h3 className="error-title">Failed to summarize</h3>
           <p className="error-message">
-            {error?.data?.error || "Unable to process this article. Please try a different URL."}
+            {getErrorMessage(error) || "Unable to process this article. Please try a different URL."}
           </p>
         </div>
       )}
