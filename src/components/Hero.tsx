@@ -1,38 +1,85 @@
+import GithubMark from "./GithubMark";
+import { REPO_URL } from "../config";
+
+
+// A static illustration of what Summify does: a long article on the left,
+// the short summary it turns into on the right.
+const Preview = () => (
+  <div className="preview" aria-hidden="true">
+    <article className="clip">
+      <p className="clip-source">citylines.example · Long read</p>
+      <h3 className="clip-title">Why the night bus is quietly having a moment</h3>
+      <p className="clip-byline">4,180 words · 21 min read</p>
+      <div className="clip-body">
+        <p>
+          At 2:40 a.m. the N12 pulls away from the depot almost full. Most of
+          the riders are not coming home from a night out. They are cleaners,
+          nurses, bakers and warehouse staff, heading to shifts that start
+          before the first train.
+        </p>
+        <p>
+          For years, overnight routes were treated as a courtesy, thinly spread
+          across the map and timed so loosely that few people could rely on
+          them. Surveys in several cities changed that picture.
+        </p>
+        <p>
+          Planners began to argue that a short list of frequent routes would
+          serve more people than a long list of rare ones.
+        </p>
+      </div>
+    </article>
+
+    <div className="digest">
+      <div className="digest-head">
+        <span className="digest-label">Summary</span>
+        <span className="meta">
+          49 words · <span className="mark">~1 min read</span>
+        </span>
+      </div>
+      <p className="digest-text">
+        Cities are expanding overnight buses after surveys showed most late
+        riders are shift workers, not people out for the evening. Planners now
+        favour a few routes every 15 minutes over wide, infrequent coverage.
+        Ridership is up on the new routes, though funding after the pilot is
+        not yet settled.
+      </p>
+    </div>
+  </div>
+);
+
 const Hero = () => {
   return (
     <header className="hero-section">
-      {/* Navbar */}
       <nav className="navbar">
         <div className="navbar-content">
           <div className="logo">Summify</div>
-          <button
-            onClick={() => window.open("https://github.com/Stroller15/Summify")}
-            className="github-btn"
+          <a
+            href={REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="nav-link"
           >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
-            </svg>
+            <GithubMark />
             GitHub
-          </button>
+          </a>
         </div>
       </nav>
 
-      {/* Hero Content */}
-      <div className="hero-badge">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M8 2L10.5 6.5L15 7L11.5 10.5L12.5 15L8 12.5L3.5 15L4.5 10.5L1 7L5.5 6.5L8 2Z" fill="currentColor" />
-        </svg>
-        AI-Powered Summarization
+      <div className="hero-grid">
+        <div className="hero-copy">
+          <h1 className="hero-title">
+            Paste a link, <span className="mark">read the gist</span>
+          </h1>
+
+          <p className="hero-description">
+            Summify fetches the article behind a URL and gives you a short
+            summary, with its word count and reading time. Past summaries stay
+            in this browser.
+          </p>
+        </div>
+
+        <Preview />
       </div>
-
-      <h1 className="hero-title">
-        Summarize any article in seconds
-      </h1>
-
-      <p className="hero-description">
-        Transform lengthy articles into clear, concise summaries with advanced AI.
-        Just paste a URL and get instant insights.
-      </p>
     </header>
   );
 };
